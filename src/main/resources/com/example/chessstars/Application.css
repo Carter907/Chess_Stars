@@ -1,0 +1,10 @@
+.button {
+
+    -fx-background-color: white;
+    -fx-border-color: black;
+}
+
+.text-area:hover {
+    -fx-background-color: white;
+    -fx-border-color: black;
+}

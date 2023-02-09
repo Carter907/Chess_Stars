@@ -1,47 +1,50 @@
-package com.example.chessstars;
+package com.example.chessstars.model;
 
-import com.example.chessstars.controllers.Controller;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import java.util.Scanner;
 
-public class HelloController extends Controller {
-    @FXML
-    private Label welcomeText;
+public class RatingScraper {
+    private ArrayList<ChessPlayer> players;
+    private final String site;
+    private final Gson gson;
 
-    @FXML
-    protected void onHelloButtonClick() {
-
-        welcomeText.setText(getRatings());
+    {
+        site = "https://www.chess.com/ratings";
+        gson = new GsonBuilder().setPrettyPrinting().create();
+        players = new ArrayList<>();
     }
 
-    private String getRatings() {
+    public RatingScraper() {
+    }
+
+    public ArrayList<ChessPlayer> scrapeChessRatings() {
+        String body = getPageHTML();
+        players = getChessPlayers(body);
+
+        return players;
+    }
+
+    private String getPageHTML() {
         try {
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest getRequest = HttpRequest.newBuilder()
-                    .uri(new URI("https://www.chess.com/ratings"))
+                    .uri(new URI(site))
                     .GET()
                     .build();
 
             HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
 
-            String body = getResponse.body();
-
-            getRatings(body);
+            return getResponse.body();
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
             e.printStackTrace();
@@ -52,7 +55,7 @@ public class HelloController extends Controller {
         return null;
     }
 
-    private void getRatings(String body) {
+    private ArrayList<ChessPlayer> getChessPlayers(String body) {
         Scanner scan = new Scanner(body);
         String line;
         ArrayList<ChessPlayer> playerList = new ArrayList<>();
@@ -77,15 +80,12 @@ public class HelloController extends Controller {
                 rating = -1;
             }
         }
+        return playerList;
 
-        System.out.println(playerList);
 
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-
-
-
+    public String getPlayersJson() {
+        return gson.toJson(players);
     }
 }
